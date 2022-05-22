@@ -1,6 +1,9 @@
 from PyQt5.QtWidgets import QWidget, QGridLayout, QFrame, QSplitter, QPushButton
 from PyQt5.QtCore import Qt
 
+from widgets.file_container import FileViewer
+from widgets.file_preview import Preview
+
 
 class MainWidget(QWidget):
     """ Основной виджет главного окна.
@@ -29,11 +32,9 @@ class MainWidget(QWidget):
     def init_ui(self):
         grid = QGridLayout(self)
 
-        self.left_top_widget = QFrame(self)
-        self.left_top_widget.setFrameShape(QFrame.StyledPanel)
+        self.left_top_widget = FileViewer(self)
 
-        self.right_top_widget = QFrame(self)
-        self.right_top_widget.setFrameShape(QFrame.StyledPanel)
+        self.right_top_widget = Preview(self)
 
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(self.left_top_widget)
