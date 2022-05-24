@@ -2,6 +2,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMainWindow, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QPushButton, QSizePolicy, QFrame, QSplitter
 
 from widgets.main_widget import MainWidget
+from config import WINDOW_MINIMUM_SIZE
 
 
 class MainWindow(QMainWindow):
@@ -13,7 +14,7 @@ class MainWindow(QMainWindow):
         self.organize_widgets()
 
     def init_ui(self):
-        self.setMinimumSize(640, 640)
+        self.setMinimumSize(WINDOW_MINIMUM_SIZE[0], WINDOW_MINIMUM_SIZE[1])
         self.setWindowTitle("PersonalManager")
         self.move(300, 100)
         self.setCentralWidget(self.main_widget)
@@ -29,7 +30,6 @@ class MainWindow(QMainWindow):
 
         self.splitter.addWidget(self.top_left_frame)
         self.splitter.addWidget(self.top_right_frame)
-
 
         self.setCentralWidget(self.splitter)
 

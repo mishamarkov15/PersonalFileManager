@@ -2,7 +2,9 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QFrame, QSplitter, QPushButton
 from PyQt5.QtCore import Qt
 
 from widgets.file_container import FileViewer
-from widgets.file_preview import Preview
+from widgets.music_player import MusicPlayer
+
+from config import WINDOW_MINIMUM_SIZE
 
 
 class MainWidget(QWidget):
@@ -34,13 +36,13 @@ class MainWidget(QWidget):
 
         self.left_top_widget = FileViewer(self)
 
-        self.right_top_widget = Preview(self)
+        self.right_top_widget = MusicPlayer(self)
 
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(self.left_top_widget)
         splitter.addWidget(self.right_top_widget)
         splitter.setStretchFactor(1, 1)
-        splitter.setSizes([200, 100])
+        splitter.setSizes([300, 150])
 
         self.buttons = QPushButton("Hello, world!")
 
