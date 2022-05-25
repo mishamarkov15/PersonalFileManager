@@ -184,6 +184,7 @@ class MusicPlayer(QWidget):
         try:
             self.set_audio_picture(full_file_path)
             self.player.setMedia(content)
+            self.slider.sld.setSliderPosition(0)
             self.player.setVolume(10)
             self.findChild(QPushButton, name='play').setIcon(self.play_icon)
             self.file_path = full_file_path
@@ -213,9 +214,11 @@ class MusicPlayer(QWidget):
 
         if self.player.state() == 1:
             self.player.pause()
+            self.slider.is_available = False
             self.findChild(QPushButton, name='play').setIcon(self.play_icon)
         else:
             self.player.play()
+            self.slider.is_available = True
             self.findChild(QPushButton, name='play').setIcon(self.pause_icon)
 
     def change_audio_position(self) -> None:
@@ -234,6 +237,7 @@ class MusicPlayer(QWidget):
 
         if self.slider.is_available:
             try:
-                self.slider.sld.setSliderPosition((self.player.position() / self.player.duration()) * 100)
+                print('here')
+                self.slider.update_slider(self.player.position(), self.player.duration())
             except ZeroDivisionError:
                 pass

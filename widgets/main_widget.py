@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout, QFrame, QSplitter, QPushButton
+from PyQt5.QtWidgets import QWidget, QGridLayout, QFrame, QSplitter, QPushButton, QLabel
 from PyQt5.QtCore import Qt
 
 from widgets.file_container import FileViewer
@@ -37,7 +37,11 @@ class MainWidget(QWidget):
 
         self.left_top_widget = FileViewer(self)
 
-        self.right_top_widget = MusicPlayer(self)
+        tmp_label = QLabel(self)
+        tmp_label.setText("Выберите файл для предпросмотра.")
+        tmp_label.setAlignment(Qt.AlignCenter)
+
+        self.right_top_widget = tmp_label
 
         self.splitter = QSplitter(Qt.Horizontal)
         self.splitter.addWidget(self.left_top_widget)

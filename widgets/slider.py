@@ -17,11 +17,11 @@ class Slider(QWidget):
         self.sld.sliderReleased.connect(self.unblock)
         grid = QGridLayout(self)
         grid.addWidget(self.sld)
-        self.is_available = True  # Для блокировки отрисовки
+        self.is_available = True
         self.setLayout(grid)
 
     def update_slider(self, current_position: int, max_position: int) -> None:
-        self.sld.setSliderPosition(int(current_position / max_position) * 100)
+        self.sld.setSliderPosition(current_position / max_position * 100)
 
     def block(self) -> None:
         self.is_available = False
