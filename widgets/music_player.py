@@ -185,6 +185,7 @@ class MusicPlayer(QWidget):
             self.set_audio_picture(full_file_path)
             self.player.setMedia(content)
             self.player.setVolume(10)
+            self.findChild(QPushButton, name='play').setIcon(self.play_icon)
             self.file_path = full_file_path
         except TypeError:
             self.show_warning(text="Выберите аудиофайл, чтобы запустить его.")

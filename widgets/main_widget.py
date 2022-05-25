@@ -25,6 +25,7 @@ class MainWidget(QWidget):
 
     def __init__(self, parent=None):
         super(MainWidget, self).__init__(parent)
+        self.splitter = None
         self.buttons = None
         self.left_top_widget = None
         self.right_top_widget = None
@@ -38,15 +39,30 @@ class MainWidget(QWidget):
 
         self.right_top_widget = MusicPlayer(self)
 
-        splitter = QSplitter(Qt.Horizontal)
-        splitter.addWidget(self.left_top_widget)
-        splitter.addWidget(self.right_top_widget)
-        splitter.setStretchFactor(1, 1)
-        splitter.setSizes([300, 150])
+        self.splitter = QSplitter(Qt.Horizontal)
+        self.splitter.addWidget(self.left_top_widget)
+        self.splitter.addWidget(self.right_top_widget)
+        self.splitter.setStretchFactor(1, 1)
+        self.splitter.setSizes([300, 150])
 
         self.buttons = QPushButton("Hello, world!")
 
-        grid.addWidget(splitter, 0, 0)
+        grid.addWidget(self.splitter, 0, 0)
         grid.addWidget(self.buttons, 1, 0)
 
         self.setLayout(grid)
+
+    def change_right_top_widget(self, widget) -> None:
+        """ Меняет правый виджет
+
+        :param widget:
+        :return:
+        """
+
+        if type(self.right_top_widget) == widget:
+            return
+
+        self.right_top_widget.destroy()
+        self.right_top_widget = widget(self)
+
+        self.splitter.replaceWidget(1, self.right_top_widget)

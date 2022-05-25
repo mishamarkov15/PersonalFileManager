@@ -3,7 +3,9 @@ from PyQt5.QtCore import Qt, QObject, QEvent, QDir, QSortFilterProxyModel
 from PyQt5 import QtCore
 
 
-from config import WINDOW_MINIMUM_SIZE
+from config import WINDOW_MINIMUM_SIZE, AUDIO_FILE_EXTENSIONS, TEXT_FILE_EXTENSIONS
+from widgets.music_player import MusicPlayer
+from widgets.text_file_viewer import TextViewer
 
 
 class FileViewer(QFrame, QWidget):
@@ -42,11 +44,14 @@ class FileViewer(QFrame, QWidget):
 
         main_widget = self.parent().parent()
 
-        if file_name.endswith('.mp3'):
-            print(file_name)
+        self.change_right_widget(file_name)
+
+        extension = file_name.split('.')[-1]
+
+        if extension in AUDIO_FILE_EXTENSIONS:
             main_widget.right_top_widget.play_audio(file_path)
-        elif file_name.endswith('.txt'):
-            print('text_file')
+        elif extension in TEXT_FILE_EXTENSIONS:
+            main_widget.right_top_widget.set_text(file_path, file_name)
         elif file_name.endswith('.jpg') or file_name.endswith('.png'):
             print('picture')
 
@@ -58,12 +63,20 @@ class FileViewer(QFrame, QWidget):
         self.layout.addWidget(self.file_view)
         self.setLayout(self.layout)
 
-    def change_right_widget(self) -> None:
-        """Изменяет виджет, расположенный справа"""
+    def change_right_widget(self, file_name: str) -> None:
+        """ Изменяет виджет, расположенный справа.
+
+        :param file_name: Имя файла, для которого открывается просмотр. Нужен для расширения.
+        :return: None
+        """
 
         main_widget = self.parent().parent()
 
-        if self.sender().objectName() == 'button_button':
-            main_widget.right_top_widget.show_selected_file(1)
-        elif self.sender().objectName() == 'label_button':
-            main_widget.right_top_widget.show_selected_file(2)
+        extension = file_name.split('.')[-1]
+
+        if extension in AUDIO_FILE_EXTENSIONS:
+            main_widget.change_right_top_widget(MusicPlayer)
+        elif extension in TEXT_FILE_EXTENSIONS:
+            main_widget.change_right_top_widget(TextViewer)
+        elif file_name.endswith('.jpg') or file_name.endswith('.png'):
+            print('picture')
