@@ -43,6 +43,7 @@ class FileViewer(QFrame, QWidget):
         main_widget = self.parent().parent()
 
         if file_name.endswith('.mp3'):
+            print(file_name)
             main_widget.right_top_widget.play_audio(file_path)
         elif file_name.endswith('.txt'):
             print('text_file')
