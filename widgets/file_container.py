@@ -3,10 +3,12 @@ from PyQt5.QtCore import Qt, QObject, QEvent, QDir, QSortFilterProxyModel
 from PyQt5 import QtCore
 
 
-from config import WINDOW_MINIMUM_SIZE, AUDIO_FILE_EXTENSIONS, TEXT_FILE_EXTENSIONS, IMAGE_FILE_EXTENSIONS
+from config import WINDOW_MINIMUM_SIZE, AUDIO_FILE_EXTENSIONS, TEXT_FILE_EXTENSIONS,\
+    IMAGE_FILE_EXTENSIONS, VIDEO_FILE_EXTENSIONS
 from widgets.music_player import MusicPlayer
 from widgets.text_file_viewer import TextViewer
 from widgets.image_viewer import ImageViewer
+from widgets.video_player import VideoPlayer
 
 
 class FileViewer(QFrame, QWidget):
@@ -47,7 +49,7 @@ class FileViewer(QFrame, QWidget):
 
         self.change_right_widget(file_name)
 
-        extension = file_name.split('.')[-1]
+        extension = file_name.split('.')[-1].lower()
 
         if extension in AUDIO_FILE_EXTENSIONS:
             main_widget.right_top_widget.play_audio(file_path)
@@ -55,6 +57,8 @@ class FileViewer(QFrame, QWidget):
             main_widget.right_top_widget.set_text(file_path, file_name)
         elif extension in IMAGE_FILE_EXTENSIONS:
             main_widget.right_top_widget.set_picture(file_path, file_name)
+        elif extension in VIDEO_FILE_EXTENSIONS:
+            main_widget.right_top_widget.play_video(file_path)
 
     def init_ui(self) -> None:
         self.setMinimumSize(WINDOW_MINIMUM_SIZE[0] // 1.5, 250)
@@ -73,7 +77,7 @@ class FileViewer(QFrame, QWidget):
 
         main_widget = self.parent().parent()
 
-        extension = file_name.split('.')[-1]
+        extension = file_name.split('.')[-1].lower()
 
         if extension in AUDIO_FILE_EXTENSIONS:
             main_widget.change_right_top_widget(MusicPlayer)
@@ -81,3 +85,5 @@ class FileViewer(QFrame, QWidget):
             main_widget.change_right_top_widget(TextViewer)
         elif extension in IMAGE_FILE_EXTENSIONS:
             main_widget.change_right_top_widget(ImageViewer)
+        elif extension in VIDEO_FILE_EXTENSIONS:
+            main_widget.change_right_top_widget(VideoPlayer)

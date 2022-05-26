@@ -125,8 +125,6 @@ class MusicPlayer(QWidget):
         volume_btn.button.clicked.connect(self.volume_mute)
         hbox_buttons.addWidget(volume_btn)
 
-        # hbox_buttons.addWidget(self.volume_controller)
-
         self.layout.addLayout(main_vbox, 0, 0)
 
     def set_volume(self) -> None:
