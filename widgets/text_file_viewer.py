@@ -46,4 +46,4 @@ class TextViewer(QWidget):
         self.file_name.setText(file_name)
 
         with open(file_path, 'r') as file:
-            self.text.setPlainText('\n'.join(file.readlines()))
+            self.text.setPlainText(''.join(file.readlines()))
