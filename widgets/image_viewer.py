@@ -29,7 +29,6 @@ class ImageViewer(QWidget):
         self.layout.addWidget(self.image, 1, 0, 5, 5)
 
         self.setLayout(self.layout)
-        print(self.size())
 
     def set_picture(self, file_path: os.path, file_name: str) -> None:
         """Устанавливает картинку в виджет. Если размер картинки меньше размера виджета, то уменьшает её"""

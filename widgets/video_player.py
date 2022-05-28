@@ -17,7 +17,7 @@ class VideoPlayer(QWidget):
     play_icon: QIcon
     volume_icon: QIcon
 
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent) -> None:
         super(VideoPlayer, self).__init__(parent)
         self.video_file_name = None
         self.video_widget = None
@@ -58,7 +58,7 @@ class VideoPlayer(QWidget):
         hbox_buttons = QHBoxLayout()
         hbox_video = QHBoxLayout()
 
-        self.video_widget = QVideoWidget(self)
+        self.video_widget = QVideoWidget()
         hbox_video.addWidget(self.video_widget)
 
         self.player.setVideoOutput(self.video_widget)
@@ -113,6 +113,7 @@ class VideoPlayer(QWidget):
             self.findChild(QPushButton, name='play').setIcon(self.play_icon)
             self.file_path = full_file_path
         except TypeError:
+            print("Error in play_video")
             pass
 
     def pause_media(self) -> None:
@@ -127,15 +128,14 @@ class VideoPlayer(QWidget):
             self.findChild(QPushButton, name='play').setIcon(self.pause_icon)
 
     def change_video_position(self) -> None:
-
         self.player.setPosition(self.player.duration() * (self.slider.sld.sliderPosition() / 100))
 
     def update_slider(self) -> None:
-
         if self.slider.is_available:
             try:
-                print('here')
-                print(self.player.position(), self.player.duration())
                 self.slider.update_slider(self.player.position(), self.player.duration())
             except ZeroDivisionError:
                 pass
+
+    def destroy(self, destroyWindow: bool = ..., destroySubWindows: bool = ...) -> None:
+        super(VideoPlayer, self).destroy()
