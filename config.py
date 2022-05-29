@@ -8,4 +8,4 @@ AUDIO_FILE_EXTENSIONS = ['mp3']
 IMAGE_FILE_EXTENSIONS = ['png', 'jpg', 'bmp', 'jpeg']
 VIDEO_FILE_EXTENSIONS = ['mp4', 'avi', 'flv', 'ts', 'mts']
 
-FACE_PHOTO = os.path.join(os.getcwd(), 'data', 'faces', 'source.jpg')
+FACE_PHOTO = os.path.join(os.getcwd(), 'data', 'faces', 'source.JPG')

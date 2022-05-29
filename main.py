@@ -8,9 +8,11 @@ from PyQt5.QtWidgets import QApplication
 from widgets.main_window import MainWindow
 
 
-def main():
-    app = QApplication(sys.argv)
-    window = MainWindow()
+def read_env() -> None:
+    """ Создаёт файл .env, если нет и считывает его.
+
+    :return: None
+    """
 
     if not os.path.exists('.env'):
         with open('.env', 'wb') as file:
@@ -18,6 +20,26 @@ def main():
 
     load_dotenv('.env')
 
+
+def check_face_id_photo() -> bool:
+    """ Проверяет, есть ли faceID фото для входа в приложение.
+
+    :return: True, если таковое имеется, иначе - False.
+    """
+
+    path_to_photos = os.path.join(os.getcwd(), 'data', 'faces')
+    return os.path.exists(os.path.join(path_to_photos, 'source.jpg'.lower())) or \
+           os.path.exists(os.path.join(path_to_photos, 'source.png'.lower()))
+
+
+def main():
+    app = QApplication(sys.argv)
+    window = MainWindow()
+
+    read_env()
+
+    if not check_face_id_photo():
+        print('Photo is not found.')
     if os.environ['PASSWORD'] == "":
         window.password_window()
     else:

@@ -8,7 +8,7 @@ from time import time
 import numpy as np
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QPushButton, QLabel, QGridLayout, QLineEdit, QHBoxLayout, \
-    QDialog, QMessageBox
+    QDialog, QMessageBox, QVBoxLayout
 from PyQt5.QtGui import QPixmap, QIcon
 
 from config import FACE_PHOTO
@@ -198,8 +198,17 @@ class PasswordSetup(QDialog):
 
     """
 
+    close_eye: QIcon
+    open_eye: QIcon
+
     def __init__(self, parent=None) -> None:
         super(PasswordSetup, self).__init__(parent)
+        self.show_repeat_password_btn = None
+        self.close_eye = QIcon(os.path.join(os.getcwd(), 'data', 'close-eye.ico'))
+        self.open_eye = QIcon(os.path.join(os.getcwd(), 'data', 'open-eye.ico'))
+        self.show_password_btn = None
+        self.repeat_password_input = None
+        self.repeat_password_label = None
         self.create_password_btn = None
         self.layout = None
         self.password_label = None
@@ -207,38 +216,108 @@ class PasswordSetup(QDialog):
         self.init_ui()
 
     def init_ui(self) -> None:
-        self.setMinimumSize(300, 300)
+        self.setMinimumSize(350, 200)
+        self.setFocusPolicy(Qt.ClickFocus)
+        self.setWindowTitle("Регистрация")
+        self.setWindowFlags((self.windowFlags() & ~Qt.WindowFullscreenButtonHint) | Qt.CustomizeWindowHint)
         self.layout = QGridLayout(self)
 
-        hbox = QHBoxLayout()
+        hbox1 = QHBoxLayout()
 
         self.password_label = QLabel("Придумайте пароль")
 
         self.password_input = QLineEdit()
+        self.password_input.setMinimumWidth(150)
         self.password_input.setEchoMode(QLineEdit.Password)
         self.password_input.setPlaceholderText("Введите пароль...")
 
-        hbox.addWidget(self.password_label)
-        hbox.addWidget(self.password_input)
+        self.show_password_btn = QPushButton()
+        self.show_password_btn.setFixedSize(32, 32)
+        self.show_password_btn.setObjectName('MainPasswordLine')
+        self.show_password_btn.setIcon(self.close_eye)
+        self.show_password_btn.clicked.connect(self.show_password)
+
+        hbox1.addWidget(self.password_label)
+        hbox1.addStretch(1)
+        hbox1.addWidget(self.password_input)
+        hbox1.addStretch(1)
+        hbox1.addWidget(self.show_password_btn)
+
+        hbox2 = QHBoxLayout()
+
+        self.repeat_password_label = QLabel("Повторите пароль")
+
+        self.repeat_password_input = QLineEdit()
+        self.repeat_password_input.setMinimumWidth(150)
+        self.repeat_password_input.setEchoMode(QLineEdit.Password)
+        self.repeat_password_input.setPlaceholderText("Повторите пароль...")
+
+        self.show_repeat_password_btn = QPushButton()
+        self.show_repeat_password_btn.setFixedSize(32, 32)
+        self.show_repeat_password_btn.setObjectName("RepeatPasswordLine")
+        self.show_repeat_password_btn.setIcon(self.close_eye)
+        self.show_repeat_password_btn.clicked.connect(self.show_password)
+
+        hbox2.addWidget(self.repeat_password_label)
+        hbox2.addStretch(1)
+        hbox2.addWidget(self.repeat_password_input)
+        hbox2.addStretch(1)
+        hbox2.addWidget(self.show_repeat_password_btn)
+
+        vbox_for_password = QVBoxLayout()
+        vbox_for_password.addLayout(hbox1)
+        vbox_for_password.addLayout(hbox2)
+        vbox_for_password.addStretch(1)
 
         self.create_password_btn = QPushButton("Подтвердить")
         self.create_password_btn.clicked.connect(self.write_password)
 
-        self.layout.addLayout(hbox, 0, 0)
-        self.layout.addWidget(self.create_password_btn, 1, 1)
+        self.layout.addLayout(vbox_for_password, 0, 0, 1, 2)
+        self.layout.addWidget(self.create_password_btn, 1, 1, 1, 1)
+        self.setFocus()
         self.setLayout(self.layout)
 
+    def show_password(self) -> None:
+        """ Показывает пароль в полях ввода.
+
+        :return: None
+        """
+
+        if self.sender().objectName() == "MainPasswordLine":
+            if self.password_input.echoMode() == QLineEdit.Password:
+                self.password_input.setEchoMode(QLineEdit.Normal)
+                self.show_password_btn.setIcon(self.open_eye)
+            else:
+                self.password_input.setEchoMode(QLineEdit.Password)
+                self.show_password_btn.setIcon(self.close_eye)
+        else:
+            if self.repeat_password_input.echoMode() == QLineEdit.Password:
+                self.repeat_password_input.setEchoMode(QLineEdit.Normal)
+                self.show_repeat_password_btn.setIcon(self.open_eye)
+            else:
+                self.repeat_password_input.setEchoMode(QLineEdit.Password)
+                self.show_repeat_password_btn.setIcon(self.close_eye)
+
     def write_password(self) -> None:
-        """ Записывает пароль в файл, используя хэширование
+        """ Записывает пароль в файл, используя алгоритм хэширования.
 
         :return: None
         """
 
         password = self.password_input.text()
+        repeat_password = self.repeat_password_input.text()
         if len(password) < 8:
             msg = QMessageBox(self)
             msg.setIcon(QMessageBox.Information)
             msg.setText("Длина пароля должна быть не менее 8 символов.")
+            msg.setWindowTitle("Некорректный ввод")
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.show()
+            return
+        elif password != repeat_password:
+            msg = QMessageBox(self)
+            msg.setIcon(QMessageBox.Information)
+            msg.setText("Пароли должны совпадать")
             msg.setWindowTitle("Некорректный ввод")
             msg.setStandardButtons(QMessageBox.Ok)
             msg.show()
