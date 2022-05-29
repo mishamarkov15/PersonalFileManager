@@ -6,8 +6,10 @@ import face_recognition
 from time import time
 
 import numpy as np
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QPushButton, QLabel, QGridLayout, QLineEdit, QHBoxLayout, \
     QDialog, QMessageBox
+from PyQt5.QtGui import QPixmap, QIcon
 
 
 class Authorization(QDialog):
@@ -15,8 +17,11 @@ class Authorization(QDialog):
 
     """
 
+    app_logo: QPixmap
+
     def __init__(self, parent=None, password=None):
         super(Authorization, self).__init__(parent)
+        self.app_logo = QPixmap(os.path.join(os.getcwd(), 'data', 'MainLogo-removebg.png'))
         self.face_img = self.load_face()
         self.face_id = None
         self.auth_button = None
@@ -29,14 +34,18 @@ class Authorization(QDialog):
         self.init_ui()
 
     def init_ui(self):
-        self.setMinimumSize(200, 200)
+        self.setMinimumSize(300, 300)
+        self.setFocusPolicy(Qt.ClickFocus)
+        self.setWindowIcon(QIcon(os.path.join(os.getcwd(), 'data', 'AppIcon.ico')))
         self.setWindowTitle("Авторизация")
 
         self.layout = QGridLayout()
 
-        self.app_name = QLabel("Personal Manager")
+        self.app_name = QLabel()
+        self.app_name.setPixmap(self.app_logo)
+        self.app_name.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         self.app_name.setObjectName("AppName")
-        self.layout.addWidget(self.app_name, 0, 0)
+        self.layout.addWidget(self.app_name, 0, 0, 2, 3)
 
         hbox = QHBoxLayout()
 
@@ -48,7 +57,7 @@ class Authorization(QDialog):
         hbox.addWidget(self.password_label)
         hbox.addWidget(self.input_password)
 
-        self.layout.addLayout(hbox, 2, 0)
+        self.layout.addLayout(hbox, 2, 0, 1, 3)
 
         self.auth_button = QPushButton("Войти")
         self.auth_button.clicked.connect(self.authorize)
@@ -56,9 +65,10 @@ class Authorization(QDialog):
         self.face_id = QPushButton("FaceID")
         self.face_id.clicked.connect(self.read_webcam)
 
-        self.layout.addWidget(self.auth_button, 3, 0)
-        self.layout.addWidget(self.face_id, 3, 1)
+        self.layout.addWidget(self.auth_button, 3, 0, 1, 2)
+        self.layout.addWidget(self.face_id, 3, 2, 1, 1)
 
+        self.setFocus()
         self.setLayout(self.layout)
 
     @staticmethod
@@ -78,8 +88,6 @@ class Authorization(QDialog):
         :return: None
         """
 
-        password = ''.encode('utf-8')
-
         if self.status:
             self.parent().show()
             self.destroy()
@@ -90,6 +98,13 @@ class Authorization(QDialog):
                               if self.password is None else self.password):
                 self.status = True
                 self.authorize()
+        else:
+            msg = QMessageBox(self)
+            msg.setIcon(QMessageBox.Information)
+            msg.setText("Введите пароль либо воспользуйтесь FaceID.")
+            msg.setWindowTitle("Ошибка авторизации.")
+            msg.setDefaultButton(QMessageBox.Ok)
+            msg.show()
 
     def read_webcam(self) -> True:
         self.setDisabled(True)
