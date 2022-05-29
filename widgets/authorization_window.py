@@ -11,21 +11,47 @@ from PyQt5.QtWidgets import QPushButton, QLabel, QGridLayout, QLineEdit, QHBoxLa
     QDialog, QMessageBox
 from PyQt5.QtGui import QPixmap, QIcon
 
+from config import FACE_PHOTO
+
 
 class Authorization(QDialog):
     """ Окно авторизации.
+
+    Attributes
+    ----------
+    app_logo: Логотип, который отрисовывается по центру окна.
+    face_img: Изображения лца, которому разрешен доступ.
+    face_id: Кнопка, которая запускает процесс распознавания лица.
+    auth_button: Кнопка, которая проверяет пароль на корректность и разрешает доступ к приложению.
+    app_label: Область, в которой рисуется app_logo.
+    input_password: Поле для ввода пароля.
+    password_label: Текст рядом с полем ввода пароля (Текст: Пароль).
+    password: Пароль, который передается в конструкторе (необязательный параметр).
+    layout: Область, в которой отрисовываются все виджеты.
+    status: Статус допуска: если True, то доступ разрешен, в противном случае - нет.
+
+    Methods
+    -------
+
 
     """
 
     app_logo: QPixmap
 
     def __init__(self, parent=None, password=None):
+        """ Конструктор окна. Инициализирует логику и графический интерфейс.
+
+        :param parent: Родительский виджет.
+        :param password: Пароль (передаётся только в случае первого запуска приложения на компьютере,
+                        чтобы всё работало без перезагрузки приложения)
+        """
+
         super(Authorization, self).__init__(parent)
         self.app_logo = QPixmap(os.path.join(os.getcwd(), 'data', 'MainLogo-removebg.png'))
         self.face_img = self.load_face()
         self.face_id = None
         self.auth_button = None
-        self.app_name = None
+        self.app_label = None
         self.input_password = None
         self.password_label = None
         self.password = password
@@ -33,19 +59,26 @@ class Authorization(QDialog):
         self.status = False
         self.init_ui()
 
-    def init_ui(self):
+    def init_ui(self) -> None:
+        """ Инициализация графического интерфейса.
+
+        :return: None
+        """
+
         self.setMinimumSize(300, 300)
         self.setFocusPolicy(Qt.ClickFocus)
+        self.setWindowFlags((self.windowFlags() & ~Qt.WindowFullscreenButtonHint) | Qt.CustomizeWindowHint)
         self.setWindowIcon(QIcon(os.path.join(os.getcwd(), 'data', 'AppIcon.ico')))
         self.setWindowTitle("Авторизация")
 
         self.layout = QGridLayout()
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
-        self.app_name = QLabel()
-        self.app_name.setPixmap(self.app_logo)
-        self.app_name.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        self.app_name.setObjectName("AppName")
-        self.layout.addWidget(self.app_name, 0, 0, 2, 3)
+        self.app_label = QLabel()
+        self.app_label.setPixmap(self.app_logo)
+        self.app_label.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        self.app_label.setObjectName("AppName")
+        self.layout.addWidget(self.app_label, 0, 0, 2, 3)
 
         hbox = QHBoxLayout()
 
@@ -53,6 +86,7 @@ class Authorization(QDialog):
 
         self.input_password = QLineEdit()
         self.input_password.setPlaceholderText("Введите пароль...")
+        self.input_password.textEdited.connect(self.update_auth_button)
 
         hbox.addWidget(self.password_label)
         hbox.addWidget(self.input_password)
@@ -60,6 +94,7 @@ class Authorization(QDialog):
         self.layout.addLayout(hbox, 2, 0, 1, 3)
 
         self.auth_button = QPushButton("Войти")
+        self.auth_button.setDisabled(True)
         self.auth_button.clicked.connect(self.authorize)
 
         self.face_id = QPushButton("FaceID")
@@ -78,12 +113,25 @@ class Authorization(QDialog):
         :return: None
         """
 
-        img = cv2.imread(os.path.join(os.getcwd(), 'data', 'faces', 'IMG_9807.JPG'))
+        img = cv2.imread(FACE_PHOTO)
         rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         return face_recognition.face_encodings(rgb_img)[0]
 
-    def authorize(self):
+    def update_auth_button(self) -> None:
+        """ Обновляет состояние кнопки 'войти' в зависимости от введенного текста в поле input_password.
+
+        :return: None
+        """
+
+        if len(self.input_password.text()) >= 8:
+            self.auth_button.setDisabled(False)
+        else:
+            self.auth_button.setDisabled(True)
+
+    def authorize(self) -> None:
         """ Проверяет авторизацию пользователя. В случае удачной авторизации запускает приложение.
+
+        Если авторизация не пройдена выводит сообщение об оишбке.
 
         :return: None
         """
@@ -106,7 +154,12 @@ class Authorization(QDialog):
             msg.setDefaultButton(QMessageBox.Ok)
             msg.show()
 
-    def read_webcam(self) -> True:
+    def read_webcam(self) -> bool:
+        """ Считывает кадры с веб-камеры и проверяет лицо человека на то, что лежит в папке data/faces.
+
+        :return: True, если авторизация пройдена, иначе - False
+        """
+
         self.setDisabled(True)
 
         cap = cv2.VideoCapture(0)
