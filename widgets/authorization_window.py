@@ -196,26 +196,55 @@ class Authorization(QDialog):
 class PasswordSetup(QDialog):
     """ Класс окна, в котором пользователь создаёт пароль.
 
+    Attributes
+    ----------
+    close_eye: Иконка закрытого глаза.
+    open_eye: Иконка открытого глаза.
+    show_password_btn: Кнопка, показывающая пароль в поле ввода пароля.
+    show_repeat_password_btn: Кнопка, показывающая пароль в поле повтора пароля.
+    password_label: Текст (Придумайте пароль).
+    password_input: Поле ввода пароля.
+    repeat_password_label: Текст (Повторите пароль).
+    repeat_password_input: Поле ввода повтора пароля.
+    create_password_btn: Кнопка регистрации.
+    layout: Область, в которой отрисовываются виджеты.
+
+    Methods
+    -------
+    init_ui: Инициализация графического интерфейса и подключение логики.
+    show_password: Переключение видимости вводимого пароля.
+    write_password: Хэширование и запись хэша пароля в файл.
+
     """
 
     close_eye: QIcon
     open_eye: QIcon
 
     def __init__(self, parent=None) -> None:
+        """ Конструктор окна регистрации.
+
+        :param parent: родительский виджет.
+        """
+
         super(PasswordSetup, self).__init__(parent)
-        self.show_repeat_password_btn = None
         self.close_eye = QIcon(os.path.join(os.getcwd(), 'data', 'close-eye.ico'))
         self.open_eye = QIcon(os.path.join(os.getcwd(), 'data', 'open-eye.ico'))
         self.show_password_btn = None
-        self.repeat_password_input = None
-        self.repeat_password_label = None
-        self.create_password_btn = None
-        self.layout = None
+        self.show_repeat_password_btn = None
         self.password_label = None
         self.password_input = None
+        self.repeat_password_label = None
+        self.repeat_password_input = None
+        self.create_password_btn = None
+        self.layout = None
         self.init_ui()
 
     def init_ui(self) -> None:
+        """ Инициализирует графичский интерфейс и подключает сигналы.
+
+        :return: None
+        """
+
         self.setMinimumSize(350, 200)
         self.setFocusPolicy(Qt.ClickFocus)
         self.setWindowTitle("Регистрация")
@@ -280,6 +309,8 @@ class PasswordSetup(QDialog):
     def show_password(self) -> None:
         """ Показывает пароль в полях ввода.
 
+        Меняет иконки на кнопках и видимость текста в соответствующих полях.
+
         :return: None
         """
 
@@ -299,7 +330,10 @@ class PasswordSetup(QDialog):
                 self.show_repeat_password_btn.setIcon(self.close_eye)
 
     def write_password(self) -> None:
-        """ Записывает пароль в файл, используя алгоритм хэширования.
+        """ Записывает пароль в файл, используя хэширование.
+
+        Проверяет, что длина пароля не менее 8 символов, а также что пароли в двух полях ввода совпадают.
+        В случае успеха записывает хэш пароля в .env файл и запускает окно авторизации.
 
         :return: None
         """
