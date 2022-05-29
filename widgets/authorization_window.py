@@ -8,7 +8,7 @@ from time import time
 import numpy as np
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QPushButton, QLabel, QGridLayout, QLineEdit, QHBoxLayout, \
-    QDialog, QMessageBox, QVBoxLayout
+    QDialog, QMessageBox, QVBoxLayout, QTextBrowser, QFileDialog
 from PyQt5.QtGui import QPixmap, QIcon
 
 from config import FACE_PHOTO
@@ -208,12 +208,17 @@ class PasswordSetup(QDialog):
     repeat_password_input: Поле ввода повтора пароля.
     create_password_btn: Кнопка регистрации.
     layout: Область, в которой отрисовываются виджеты.
+    hash_password: Хэш созданного пароля.
 
     Methods
     -------
     init_ui: Инициализация графического интерфейса и подключение логики.
     show_password: Переключение видимости вводимого пароля.
+    open_auth_window: Открывает окно авторизации.
+    check_face_id_photo: Проверяет наличие фото для распознавания
     write_password: Хэширование и запись хэша пароля в файл.
+    upload_photo: Открывает диалоговое окно для загрузки фото, используемого в FaceID.
+    open_photo: Сохраняет выбранное фото.
 
     """
 
@@ -237,6 +242,7 @@ class PasswordSetup(QDialog):
         self.repeat_password_input = None
         self.create_password_btn = None
         self.layout = None
+        self.hash_password = None
         self.init_ui()
 
     def init_ui(self) -> None:
@@ -329,6 +335,72 @@ class PasswordSetup(QDialog):
                 self.repeat_password_input.setEchoMode(QLineEdit.Password)
                 self.show_repeat_password_btn.setIcon(self.close_eye)
 
+    @staticmethod
+    def check_face_id_photo() -> bool:
+        """ Проверяет, есть ли faceID фото для входа в приложение.
+
+        :return: True, если таковое имеется, иначе - False.
+        """
+
+        path_to_photos = os.path.join(os.getcwd(), '.', 'data', 'faces')
+        return os.path.exists(os.path.join(path_to_photos, 'source.jpg'.lower())) or \
+               os.path.exists(os.path.join(path_to_photos, 'source.png'.lower()))
+
+    def open_auth_window(self) -> None:
+        """ Открывает окно авторизации, когда все регистрации пройдены.
+
+        :return: None
+        """
+
+        self.parent().auth(self.hash_password)
+
+    def upload_photo(self) -> None:
+        """ Создает диалоговое окно, в котором пользователю предлагается загрузить фото для FaceID.
+
+        :return: None
+        """
+
+        dial = QDialog(self)
+        dial.setWindowTitle("Создание FaceID")
+        dial.setFocusPolicy(Qt.ClickFocus)
+
+        grid = QGridLayout()
+
+        label = QTextBrowser()
+        label.setText("Добавьте фотографию лица, для входа приложения с помощью FaceID.\n"
+                      "Ваше лицо должно быть хорошо освещено и сфотографировано крупным планом, без головных уборов, "
+                      "очков и других аксессуаров, которые могут помешать распознать Вас.")
+        label.setReadOnly(True)
+
+        grid.addWidget(label, 0, 0, 2, 2)
+
+        btn = QPushButton("Выбрать фото")
+        btn.clicked.connect(self.open_photo)
+
+        grid.addWidget(btn, 2, 1, 1, 1)
+
+        dial.setLayout(grid)
+        dial.show()
+
+    def open_photo(self) -> None:
+        """ Если фото корректно загружено, то открываем авторизацию.
+
+        :return: None
+        """
+
+        file_name = QFileDialog.getOpenFileNames(self.sender(),
+                                                 'Открыть файл', '/home', "Image files (*.jpg *.png *.JPG *.PNG)")[0]
+
+        with open(file_name[0], 'rb') as file:
+            data = file.read()
+
+        with open(os.path.join(os.getcwd(), '.', 'data', 'faces', 'source.jpg'), 'wb') as file:
+            file.write(data)
+
+        self.sender().parent().hide()
+        self.sender().parent().destroy()
+        self.open_auth_window()
+
     def write_password(self) -> None:
         """ Записывает пароль в файл, используя хэширование.
 
@@ -365,4 +437,9 @@ class PasswordSetup(QDialog):
         with open('./.env', 'wb') as file:
             file.write(b"PASSWORD=" + bytes(hash_password) + b"\n")
 
-        self.parent().auth(hash_password)
+        self.hash_password = hash_password
+
+        if not self.check_face_id_photo():
+            self.upload_photo()
+        else:
+            self.open_auth_window()
