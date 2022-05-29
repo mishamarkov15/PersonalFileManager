@@ -1,14 +1,13 @@
 import os
-
+import bcrypt
 import cv2
-import sys
 import face_recognition
 
 from time import time
 
 import numpy as np
 from PyQt5.QtWidgets import QPushButton, QLabel, QGridLayout, QLineEdit, QHBoxLayout, \
-    QDialog
+    QDialog, QMessageBox
 
 
 class Authorization(QDialog):
@@ -16,7 +15,7 @@ class Authorization(QDialog):
 
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, password=None):
         super(Authorization, self).__init__(parent)
         self.face_img = self.load_face()
         self.face_id = None
@@ -24,11 +23,15 @@ class Authorization(QDialog):
         self.app_name = None
         self.input_password = None
         self.password_label = None
+        self.password = password
         self.layout = None
         self.status = False
         self.init_ui()
 
     def init_ui(self):
+        self.setMinimumSize(200, 200)
+        self.setWindowTitle("Авторизация")
+
         self.layout = QGridLayout()
 
         self.app_name = QLabel("Personal Manager")
@@ -75,16 +78,27 @@ class Authorization(QDialog):
         :return: None
         """
 
+        password = ''.encode('utf-8')
+
         if self.status:
             self.parent().show()
             self.destroy()
+        elif len(self.input_password.text()) >= 8:
+            password = self.input_password.text().encode('utf-8')
+            if bcrypt.checkpw(password,
+                              os.environ["PASSWORD"].encode('utf-8')
+                              if self.password is None else self.password):
+                self.status = True
+                self.authorize()
 
     def read_webcam(self) -> True:
+        self.setDisabled(True)
+
         cap = cv2.VideoCapture(0)
 
         start_time = time()
 
-        while time() - start_time < 5:
+        while time() - start_time < 3:
             ret, frame = cap.read()
 
             tmp_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -102,8 +116,72 @@ class Authorization(QDialog):
         cap.release()
         cv2.destroyAllWindows()
 
+        self.setDisabled(False)
+
         if self.status:
             self.authorize()
             return True
         else:
             return False
+
+
+class PasswordSetup(QDialog):
+    """ Класс окна, в котором пользователь создаёт пароль.
+
+    """
+
+    def __init__(self, parent=None) -> None:
+        super(PasswordSetup, self).__init__(parent)
+        self.create_password_btn = None
+        self.layout = None
+        self.password_label = None
+        self.password_input = None
+        self.init_ui()
+
+    def init_ui(self) -> None:
+        self.setMinimumSize(300, 300)
+        self.layout = QGridLayout(self)
+
+        hbox = QHBoxLayout()
+
+        self.password_label = QLabel("Придумайте пароль")
+
+        self.password_input = QLineEdit()
+        self.password_input.setEchoMode(QLineEdit.Password)
+        self.password_input.setPlaceholderText("Введите пароль...")
+
+        hbox.addWidget(self.password_label)
+        hbox.addWidget(self.password_input)
+
+        self.create_password_btn = QPushButton("Подтвердить")
+        self.create_password_btn.clicked.connect(self.write_password)
+
+        self.layout.addLayout(hbox, 0, 0)
+        self.layout.addWidget(self.create_password_btn, 1, 1)
+        self.setLayout(self.layout)
+
+    def write_password(self) -> None:
+        """ Записывает пароль в файл, используя хэширование
+
+        :return: None
+        """
+
+        password = self.password_input.text()
+        if len(password) < 8:
+            msg = QMessageBox(self)
+            msg.setIcon(QMessageBox.Information)
+            msg.setText("Длина пароля должна быть не менее 8 символов.")
+            msg.setWindowTitle("Некорректный ввод")
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.show()
+            return
+
+        password = password.encode('utf-8')
+        salt = bcrypt.gensalt()
+
+        hash_password = bcrypt.hashpw(password, salt)
+
+        with open('./.env', 'wb') as file:
+            file.write(b"PASSWORD=" + bytes(hash_password) + b"\n")
+
+        self.parent().auth(hash_password)
