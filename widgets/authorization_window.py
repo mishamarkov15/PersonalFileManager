@@ -394,6 +394,9 @@ class PasswordSetup(QDialog):
         with open(file_name[0], 'rb') as file:
             data = file.read()
 
+        if not os.path.exists(os.path.join(os.getcwd(), '.', 'data', 'faces')):
+            os.mkdir(os.path.join(os.getcwd(), '.', 'data', 'faces'))
+
         with open(os.path.join(os.getcwd(), '.', 'data', 'faces', 'source.jpg'), 'wb') as file:
             file.write(data)
 
