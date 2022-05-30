@@ -89,6 +89,8 @@ class MainWidget(QWidget):
         current_path = self.get_current_file_path()
         if current_path == '':
             current_path = PATH_TO_STORAGE
+        elif not os.path.isdir(current_path):
+            current_path = os.path.abspath(os.path.join(current_path, '..'))
 
         new_dirs = [file for file in os.listdir(current_path)
                     if os.path.isdir(os.path.join(current_path, file)) and file.startswith('Новая папка')]

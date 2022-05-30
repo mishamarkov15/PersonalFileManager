@@ -157,9 +157,13 @@ class MusicPlayer(QWidget):
         audiofile = eyed3.load(file_path)
 
         images = audiofile.tag.images
-        qp = QPixmap()
-        qp.loadFromData(images[0].image_data)
-        qp.scaled(256, 256)
+        try:
+            qp = QPixmap()
+            qp.loadFromData(images[0].image_data)
+            qp.scaled(256, 256)
+        except IndexError:
+            qp = QPixmap(os.path.join(os.getcwd(), '.', 'data', 'assets', 'music-note.png'))
+            qp.scaled(256, 256)
         self.audio_picture.setPixmap(qp)
         self.audio_picture.setAlignment(Qt.AlignCenter)
 
