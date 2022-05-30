@@ -138,4 +138,6 @@ class VideoPlayer(QWidget):
                 pass
 
     def destroy(self, destroyWindow: bool = ..., destroySubWindows: bool = ...) -> None:
+        self.player.setPosition(self.player.duration()-1)
+        self.player.pause()
         super(VideoPlayer, self).destroy()

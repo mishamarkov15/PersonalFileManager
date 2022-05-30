@@ -1,3 +1,5 @@
+import os.path
+
 from PyQt5.QtWidgets import QWidget, QFrame, QPushButton, QGridLayout, QTreeView, QFileSystemModel
 from PyQt5.QtCore import Qt, QObject, QEvent, QDir, QSortFilterProxyModel
 from PyQt5 import QtCore
@@ -25,23 +27,21 @@ class FileViewer(QFrame, QWidget):
 
     def init_file_view(self) -> None:
         self.file_view = QTreeView(self)
-        self.file_model = QFileSystemModel(self)
-        self.proxy = QSortFilterProxyModel(parent=self, filterRole=QFileSystemModel.FileNameRole)
+        self.file_model = QFileSystemModel(self.file_view)
+        self.proxy = QSortFilterProxyModel(parent=self.file_model, filterRole=QFileSystemModel.FileNameRole)
 
         self.file_view.clicked.connect(self.on_file_view_clicked)
-        self.file_view.setModel(self.proxy)
         self.file_view.setAnimated(True)
         self.file_view.setSortingEnabled(True)
         self.file_view.setIndentation(20)
 
         self.file_model.setRootPath(QDir.currentPath())
-
+        self.file_view.setModel(self.file_model)
         self.proxy.setSourceModel(self.file_model)
 
     @QtCore.pyqtSlot(QtCore.QModelIndex)
     def on_file_view_clicked(self, index):
-        source_index = self.proxy.mapToSource(index)
-        index_item = self.file_model.index(source_index.row(), 0, source_index.parent())
+        index_item = self.file_model.index(index.row(), 0, index.parent())
         file_name = self.file_model.fileName(index_item)
         file_path = self.file_model.filePath(index_item)
 

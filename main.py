@@ -1,4 +1,5 @@
 import os
+import ctypes
 import sys
 import bcrypt
 
@@ -32,7 +33,13 @@ def check_face_id_photo() -> bool:
            os.path.exists(os.path.join(path_to_photos, 'source.png'.lower()))
 
 
+def check_prep(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+
 def main():
+    check_prep(os.path.join(os.getcwd(), '..', '.storage'))
     app = QApplication(sys.argv)
     window = MainWindow()
 
