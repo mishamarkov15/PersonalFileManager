@@ -1,6 +1,6 @@
 import os.path
 
-from PyQt5.QtWidgets import QWidget, QFrame, QPushButton, QGridLayout, QTreeView, QFileSystemModel
+from PyQt5.QtWidgets import QWidget, QFrame, QPushButton, QGridLayout, QTreeView, QFileSystemModel, QAbstractItemView
 from PyQt5.QtCore import Qt, QObject, QEvent, QDir, QSortFilterProxyModel
 from PyQt5 import QtCore
 
@@ -30,6 +30,7 @@ class FileViewer(QFrame, QWidget):
         self.file_view.clicked.connect(self.on_file_view_clicked)
         self.file_view.setAcceptDrops(True)
         self.file_view.setDragEnabled(True)
+        self.file_view.setDragDropMode(QAbstractItemView.InternalMove)
         self.file_view.setAnimated(True)
         self.file_view.setSortingEnabled(True)
         self.file_view.setIndentation(20)
