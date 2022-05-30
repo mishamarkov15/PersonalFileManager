@@ -110,10 +110,17 @@ class MainWidget(QWidget):
         file_name = QFileDialog.getOpenFileName(self.sender().parent(),
                                                 'Открыть файл', '/home')[0]
 
+        if file_name == "":
+            return
+
         with open(file_name, 'rb') as file:
             data = file.read()
 
-        with open(os.path.join(self.get_current_file_path(), os.path.basename(file_name)), 'wb') as file:
+        path_to_save = self.get_current_file_path()
+        if path_to_save == '':
+            path_to_save = PATH_TO_STORAGE
+
+        with open(os.path.join(path_to_save, os.path.basename(file_name)), 'wb') as file:
             file.write(data)
 
     def remove_file(self) -> None:

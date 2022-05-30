@@ -28,6 +28,7 @@ class FileViewer(QFrame, QWidget):
     def init_file_view(self) -> None:
         self.file_view = QTreeView(self)
         self.file_view.clicked.connect(self.on_file_view_clicked)
+        self.file_view.setFocusPolicy(Qt.ClickFocus)
         self.file_view.setAcceptDrops(True)
         self.file_view.setDragEnabled(True)
         self.file_view.setDragDropMode(QAbstractItemView.InternalMove)
