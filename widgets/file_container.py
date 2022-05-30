@@ -27,16 +27,18 @@ class FileViewer(QFrame, QWidget):
 
     def init_file_view(self) -> None:
         self.file_view = QTreeView(self)
-        self.file_model = QFileSystemModel(self.file_view)
-        self.proxy = QSortFilterProxyModel(parent=self.file_model, filterRole=QFileSystemModel.FileNameRole)
-
         self.file_view.clicked.connect(self.on_file_view_clicked)
+        self.file_view.setAcceptDrops(True)
+        self.file_view.setDragEnabled(True)
         self.file_view.setAnimated(True)
         self.file_view.setSortingEnabled(True)
         self.file_view.setIndentation(20)
 
+        self.file_model = QFileSystemModel(self.file_view)
         self.file_model.setRootPath(PATH_TO_STORAGE)
         self.file_model.setReadOnly(False)
+
+        self.proxy = QSortFilterProxyModel(parent=self.file_model, filterRole=QFileSystemModel.FileNameRole)
 
         self.file_view.setModel(self.file_model)
         self.file_view.setRootIndex(self.file_model.index(PATH_TO_STORAGE))
