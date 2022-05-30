@@ -6,7 +6,7 @@ from PyQt5 import QtCore
 
 
 from config import WINDOW_MINIMUM_SIZE, AUDIO_FILE_EXTENSIONS, TEXT_FILE_EXTENSIONS,\
-    IMAGE_FILE_EXTENSIONS, VIDEO_FILE_EXTENSIONS
+    IMAGE_FILE_EXTENSIONS, VIDEO_FILE_EXTENSIONS, PATH_TO_STORAGE
 from widgets.music_player import MusicPlayer
 from widgets.text_file_viewer import TextViewer
 from widgets.image_viewer import ImageViewer
@@ -30,17 +30,16 @@ class FileViewer(QFrame, QWidget):
         self.file_model = QFileSystemModel(self.file_view)
         self.proxy = QSortFilterProxyModel(parent=self.file_model, filterRole=QFileSystemModel.FileNameRole)
 
-        path = os.path.abspath(os.path.join(os.getcwd(), '..', '.storage'))
-
         self.file_view.clicked.connect(self.on_file_view_clicked)
         self.file_view.setAnimated(True)
         self.file_view.setSortingEnabled(True)
         self.file_view.setIndentation(20)
 
-        self.file_model.setRootPath(path)
+        self.file_model.setRootPath(PATH_TO_STORAGE)
+        self.file_model.setReadOnly(False)
 
         self.file_view.setModel(self.file_model)
-        self.file_view.setRootIndex(self.file_model.index(path))
+        self.file_view.setRootIndex(self.file_model.index(PATH_TO_STORAGE))
         self.proxy.setSourceModel(self.file_model)
 
     @QtCore.pyqtSlot(QtCore.QModelIndex)

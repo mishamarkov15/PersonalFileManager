@@ -1,8 +1,12 @@
-from PyQt5.QtWidgets import QWidget, QGridLayout, QFrame, QSplitter, QPushButton, QLabel, QMessageBox
+import os.path
+
+from PyQt5.QtWidgets import QWidget, QGridLayout, QFrame, QSplitter, QPushButton, QLabel, QMessageBox, QDialog, \
+    QFileDialog
 from PyQt5.QtCore import Qt
 
 from widgets.file_container import FileViewer
 from widgets.video_player import VideoPlayer
+from config import PATH_TO_STORAGE
 
 
 class MainWidget(QWidget):
@@ -23,6 +27,7 @@ class MainWidget(QWidget):
 
     def __init__(self, parent=None):
         super(MainWidget, self).__init__(parent)
+        self.add_dir_btn = None
         self.remove_btn = None
         self.splitter = None
         self.add_btn = None
@@ -52,15 +57,47 @@ class MainWidget(QWidget):
         self.add_btn = QPushButton("Добавить файл")
         self.add_btn.clicked.connect(self.upload_file)
 
+        self.add_dir_btn = QPushButton("Создать папку")
+        self.add_dir_btn.clicked.connect(self.create_dir)
+
         self.remove_btn = QPushButton("Удалить файл")
         self.remove_btn.clicked.connect(self.remove_file)
 
         grid.addWidget(self.splitter, 0, 0, 5, 5)
         grid.addWidget(self.add_btn, 5, 0, 1, 1)
-        grid.addWidget(self.remove_btn, 5, 1, 1, 1)
+        grid.addWidget(self.add_dir_btn, 5, 1, 1, 1)
+        grid.addWidget(self.remove_btn, 5, 2, 1, 1)
 
         self.setLayout(grid)
         self.setFocus()
+
+    def get_current_file_path(self) -> str:
+        """ Возвращает путь к файлу.
+
+        :return: str путь к выбранному файлу
+        """
+        index = self.left_top_widget.file_view.currentIndex()
+        index_item = self.left_top_widget.file_model.index(index.row(), 0, index.parent())
+        return self.left_top_widget.file_model.filePath(index_item)
+
+    def create_dir(self) -> None:
+        """ Создаёт папку в хранилище.
+
+        :return: None
+        """
+
+        current_path = self.get_current_file_path()
+        if current_path == '':
+            current_path = PATH_TO_STORAGE
+
+        new_dirs = [file for file in os.listdir(current_path)
+                    if os.path.isdir(os.path.join(current_path, file)) and file.startswith('Новая папка')]
+
+        dir_name = 'Новая папка' + ('' if len(new_dirs) == 0 else f' {len(new_dirs)}')
+        if os.path.isdir(current_path):
+            os.mkdir(os.path.join(current_path, dir_name))
+        else:
+            os.mkdir(os.path.abspath(os.path.join(current_path, '..', dir_name)))
 
     def upload_file(self) -> None:
         """ Загружает файл в хранилище.
@@ -68,11 +105,14 @@ class MainWidget(QWidget):
         :return: None
         """
 
-        index = self.left_top_widget.file_view.currentIndex()
+        file_name = QFileDialog.getOpenFileName(self.sender().parent(),
+                                                'Открыть файл', '/home')[0]
 
-        index_item = self.left_top_widget.file_model.index(index.row(), 0, index.parent())
-        file_path = self.left_top_widget.file_model.filePath(index_item)
-        print(file_path)
+        with open(file_name, 'rb') as file:
+            data = file.read()
+
+        with open(os.path.join(self.get_current_file_path(), os.path.basename(file_name)), 'wb') as file:
+            file.write(data)
 
     def remove_file(self) -> None:
         """ Удаляет выбранный файл/папку.
