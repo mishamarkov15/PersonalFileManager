@@ -30,13 +30,17 @@ class FileViewer(QFrame, QWidget):
         self.file_model = QFileSystemModel(self.file_view)
         self.proxy = QSortFilterProxyModel(parent=self.file_model, filterRole=QFileSystemModel.FileNameRole)
 
+        path = os.path.abspath(os.path.join(os.getcwd(), '..', '.storage'))
+
         self.file_view.clicked.connect(self.on_file_view_clicked)
         self.file_view.setAnimated(True)
         self.file_view.setSortingEnabled(True)
         self.file_view.setIndentation(20)
 
-        self.file_model.setRootPath(QDir.currentPath())
+        self.file_model.setRootPath(path)
+
         self.file_view.setModel(self.file_model)
+        self.file_view.setRootIndex(self.file_model.index(path))
         self.proxy.setSourceModel(self.file_model)
 
     @QtCore.pyqtSlot(QtCore.QModelIndex)
